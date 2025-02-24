@@ -1,0 +1,10 @@
+const mongoose = require("mongoose");
+
+const UserPantrySchema = new mongoose.Schema({
+    user_id: { type: String, required: true },
+    item_id: { type: String, required: true },
+    name: { type: String, required: true },
+    quantity: { type: Number, default: 1 }
+});
+
+module.exports = mongoose.model("UserPantry", UserPantrySchema);
