@@ -1,45 +1,68 @@
-// src/components/GroceryList.js
-import React, { useState } from 'react';
+import React, { useState } from "react";
+import "./GroceryList.css";
 
-function GroceryList() {
+const GroceryList = () => {
   const [items, setItems] = useState([]);
-  const [newItem, setNewItem] = useState('');
+  const [input, setInput] = useState("");
 
-  const handleAddItem = (e) => {
-    e.preventDefault();
-    if (newItem) {
-      setItems([...items, newItem]);
-      setNewItem('');
+  // Suggested items
+  const suggestedItems = ["Milk", "Eggs", "Bread", "Fruits", "Vegetables", "Rice", "Pasta", "Butter"];
+
+  // Add item from input field
+  const addItem = () => {
+    if (input.trim() !== "") {
+      setItems([...items, input]);
+      setInput("");
     }
   };
 
+  // Add suggested item
+  const addSuggestedItem = (item) => {
+    if (!items.includes(item)) {
+      setItems([...items, item]);
+    }
+  };
+
+  // Remove item
+  const removeItem = (index) => {
+    const newItems = items.filter((_, i) => i !== index);
+    setItems(newItems);
+  };
+
   return (
-    <div>
-      <h2>Grocery List</h2>
-      <form onSubmit={handleAddItem}>
-        <input
-          type="text"
-          value={newItem}
-          onChange={(e) => setNewItem(e.target.value)}
-          placeholder="Add grocery item"
-          required
-        />
-        <button type="submit">Add</button>
-      </form>
-      <ul>
+    <div className="grocery-container">
+      <h1>🛒 Grocery List</h1>
+      
+      {/* Input Field */}
+      <input
+        type="text"
+        placeholder="Add a grocery item..."
+        value={input}
+        onChange={(e) => setInput(e.target.value)}
+      />
+      <button onClick={addItem}>Add</button>
+
+      {/* Grocery List */}
+      <ul className="grocery-list">
         {items.map((item, index) => (
-          <li key={index}>{item}</li>
+          <li key={index}>
+            {item}
+            <button onClick={() => removeItem(index)}>❌</button>
+          </li>
         ))}
       </ul>
-      <h3>Healthy Options to Consider:</h3>
-      <ul>
-        <li>Fresh fruits and vegetables</li>
-        <li>Whole grains</li>
-        <li>Lean proteins</li>
-        <li>Nuts and seeds</li>
+
+      {/* Suggested Items Section */}
+      <h2>📌 Suggested Items</h2>
+      <ul className="suggested-items">
+        {suggestedItems.map((item, index) => (
+          <li key={index} onClick={() => addSuggestedItem(item)}>
+            📌 {item}
+          </li>
+        ))}
       </ul>
     </div>
   );
-}
+};
 
 export default GroceryList;
