@@ -1,0 +1,90 @@
+.grocery-container {
+    background: url("../assets/grocery-bg.jpg") no-repeat center center/cover;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: black;
+}
+
+/* Light Transparent Black Box for Grocery List */
+.grocery-box {
+    background: rgba(0, 0, 0, 1); /* Adjusted transparency */
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    backdrop-filter: blur(5px); /* Adds a slight blur effect */
+}
+
+/* Input and Button Styling */
+input {
+    padding: 10px;
+    width: 250px;
+    border: none;
+    border-radius: 5px;
+}
+
+button {
+    margin-left: 10px;
+    padding: 10px 15px;
+    border: none;
+    background: #28a745;
+    color: white;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+button:hover {
+    background: #218838;
+}
+
+/* Styling the Grocery List Inside the Black Box */
+.grocery-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.grocery-list li {
+    background: rgba(255, 255, 255, 0.1); /* Slight transparency */
+    padding: 10px;
+    margin: 5px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 5px;
+}
+
+.grocery-list li button {
+    background: red;
+}
+
+/* Suggested Items Styling */
+.suggested-items {
+    list-style: none;
+    padding: 0;
+    margin-top: 10px;
+}
+
+.suggested-items li {
+    cursor: pointer; /* Hand cursor on hover */
+    padding: 5px;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+}
+
+.suggested-items li:hover {
+    color: #ffcc00;
+    transform: scale(1.05);
+}
+
+/* 📌 Pin icon before suggested items */
+.suggested-items li::before {
+    content: "";
+    margin-right: 8px;
+}
