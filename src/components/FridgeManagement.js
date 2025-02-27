@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { auth } from '../firebase'; // Add this with other imports
-import { onAuthStateChanged } from 'firebase/auth';
+import { auth } from '../firebase';
+import axios from 'axios';
 import {
   Box,
   Container,
@@ -25,6 +25,8 @@ import {
   Paper,
   Chip,
   CircularProgress,
+  useTheme,
+  alpha,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import AddIcon from '@mui/icons-material/Add';
@@ -59,6 +61,7 @@ const initialFridgeItems = [
 ];
 
 const FridgeManagement = () => {
+  const theme = useTheme();
   const [user, setUser] = useState(null);
   const [items, setItems] = useState(initialFridgeItems);
   const [searchTerm, setSearchTerm] = useState('');
@@ -68,66 +71,78 @@ const FridgeManagement = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  // Add this useEffect for auth state monitoring
-useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-    setUser(currentUser);
-    if (currentUser) {
-      // Load items from localStorage when user logs in
-      const savedItems = localStorage.getItem(`fridgeItems_${currentUser.uid}`);
-      if (savedItems) {
-        setItems(JSON.parse(savedItems));
-      } else {
-        setItems(initialFridgeItems);
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      if (user) {
+        // Fetch items when user logs in
+        fetchItems(user.uid);
       }
-    } else {
-      // Clear items when user logs out
-      setItems([]);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const fetchItems = async (userId) => {
+    try {
+      const response = await axios.get(`/api/items/${userId}`);
+      setItems(response.data);
+    } catch (error) {
+      console.error('Error fetching items:', error);
     }
-  });
+  };
 
-  // Cleanup subscription
-  return () => unsubscribe();
-}, []);
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem(`fridgeItems_${user.uid}`, JSON.stringify(items));
+    }
+  }, [items, user]);
 
-// Replace your existing localStorage useEffect with this
-useEffect(() => {
-  if (user) {
-    localStorage.setItem(`fridgeItems_${user.uid}`, JSON.stringify(items));
-  }
-}, [items, user]);
+  const handleSubmit = async (item) => {
+    if (!user) {
+      setSnackbarMessage('Please login to add items');
+      setSnackbarOpen(true);
+      return;
+    }
 
+    try {
+      if (selectedItem) {
+        await axios.put(`/api/items/${user.uid}/${selectedItem._id}`, item);
+      } else {
+        await axios.post(`/api/items/${user.uid}`, item);
+      }
+      
+      // Refresh items list
+      await fetchItems(user.uid);
+      setIsAddEditModalOpen(false);
+      setSelectedItem(null);
+      setSnackbarMessage('Item saved successfully!');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error:', error);
+      setSnackbarMessage('Error saving item');
+      setSnackbarOpen(true);
+    }
+  };
 
-const handleSubmit = (item) => {
-  if (!user) {
-    setSnackbarMessage('Please login to add items');
-    setSnackbarOpen(true);
-    return;
-  }
+  const handleDelete = async (id) => {
+    if (!user) {
+      setSnackbarMessage('Please login to delete items');
+      setSnackbarOpen(true);
+      return;
+    }
 
-  if (selectedItem) {
-    setItems((prev) => prev.map((i) => (i.id === item.id ? { ...item, userId: user.uid } : i)));
-    setSnackbarMessage('Item updated successfully!');
-  } else {
-    setItems((prev) => [...prev, { ...item, id: Date.now(), userId: user.uid }]);
-    setSnackbarMessage('Item added successfully!');
-  }
-  setIsAddEditModalOpen(false);
-  setSelectedItem(null);
-  setSnackbarOpen(true);
-};
-
-const handleDelete = (id) => {
-  if (!user) {
-    setSnackbarMessage('Please login to delete items');
-    setSnackbarOpen(true);
-    return;
-  }
-
-  setItems((prev) => prev.filter((item) => item.id !== id));
-  setSnackbarMessage('Item deleted successfully!');
-  setSnackbarOpen(true);
-};
+    try {
+      await axios.delete(`/api/items/${user.uid}/${id}`);
+      setItems(prev => prev.filter(item => item._id !== id));
+      setSnackbarMessage('Item deleted successfully!');
+      setSnackbarOpen(true);
+    } catch (error) {
+      console.error('Error:', error);
+      setSnackbarMessage('Error deleting item');
+      setSnackbarOpen(true);
+    }
+  };
 
   const getExpiryStatus = (expiryDate) => {
     const today = new Date();
@@ -150,248 +165,314 @@ const handleDelete = (id) => {
   });
 
   return (
-    <Container>
+    <Box sx={{ 
+      minHeight: '100vh',
+      backgroundColor: alpha(theme.palette.primary.main, 0.03),
+      pb: 8 
+    }}>
       <CssBaseline />
-      <AppBar position="static" sx={{ borderRadius: '0 0 16px 16px', marginBottom: 4 }}>
-        <Toolbar>
+      <AppBar 
+        position="static" 
+        elevation={0}
+        sx={{ 
+          background: `linear-gradient(45deg, ${theme.palette.primary.main} 30%, ${theme.palette.primary.dark} 90%)`,
+          borderRadius: '0 0 24px 24px',
+          mb: 4 
+        }}
+      >
+        <Toolbar sx={{ height: 80 }}>
           <IconButton edge="start" color="inherit" sx={{ mr: 2 }}>
-            <KitchenIcon />
+            <KitchenIcon sx={{ fontSize: 32 }} />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1, fontWeight: 600 }}>
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1, fontWeight: 700 }}>
             Smart Fridge Manager
           </Typography>
           <Button 
             variant="contained" 
-            color="secondary" 
             onClick={() => setIsAddEditModalOpen(true)}
             startIcon={<AddIcon />}
             sx={{ 
-              borderRadius: '20px',
+              borderRadius: '28px',
               textTransform: 'none',
-              px: 3
+              px: 4,
+              py: 1.5,
+              backgroundColor: 'white',
+              color: theme.palette.primary.main,
+              '&:hover': {
+                backgroundColor: alpha(theme.palette.common.white, 0.9),
+              }
             }}
           >
             Add Item
           </Button>
         </Toolbar>
       </AppBar>
-
-      <Box sx={{ 
-        display: 'flex', 
-        gap: 2, 
-        flexWrap: 'wrap',
-        backgroundColor: '#f5f5f5',
-        p: 3,
-        borderRadius: 2,
-        mb: 4
-      }}>
-        <TextField
-          size="small"
-          variant="outlined"
-          placeholder="Search items..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ 
-            flex: 2,
-            minWidth: '200px',
-            backgroundColor: 'white'
-          }}
-          InputProps={{
-            startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />
-          }}
-        />
-        <FormControl 
-          size="small" 
-          sx={{ 
-            flex: 1,
-            minWidth: '150px',
-            backgroundColor: 'white'
-          }}
-        >
-          <InputLabel>Category</InputLabel>
-          <Select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            label="Category"
-          >
-            <MenuItem value="all">All</MenuItem>
-            <MenuItem value="Dairy">Dairy</MenuItem>
-            <MenuItem value="Vegetables">Vegetables</MenuItem>
-            <MenuItem value="Fruits">Fruits</MenuItem>
-            <MenuItem value="Meat">Meat</MenuItem>
-            <MenuItem value="Beverages">Beverages</MenuItem>
-            <MenuItem value="Other">Other</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-
-      <Grid container spacing={3}>
-        {filteredItems.map(item => (
-          <Grid item xs={12} sm={6} md={4} key={item.id}>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Paper
-                elevation={3}
-                sx={{
-                  padding: 2,
-                  borderRadius: 3,
-                  backgroundColor: getExpiryStatus(item.expiryDate) === 'expired' ? '#ffebee' :
-                    getExpiryStatus(item.expiryDate) === 'warning' ? '#fff3e0' : '#e8f5e9',
-                  transition: 'all 0.3s ease',
-                  '&:hover': {
-                    transform: 'translateY(-5px)',
-                    boxShadow: 6,
-                  },
-                  display: 'flex',
-                  flexDirection: 'column',
-                  height: '100%'
-                }}
-              >
-                <Box sx={{ position: 'relative' }}>
-                  <img
-                    src={item.imageURL || '/default-food-image.png'}
-                    alt={item.itemName}
-                    style={{ 
-                      width: '100%', 
-                      height: '200px', 
-                      objectFit: 'cover',
-                      borderRadius: '12px'
-                    }}
-                  />
-                  <Chip
-                    label={item.category}
-                    size="small"
-                    sx={{
-                      position: 'absolute',
-                      top: 8,
-                      right: 8,
-                      backgroundColor: 'rgba(255, 255, 255, 0.9)'
-                    }}
-                  />
-                </Box>
-                
-                <Box sx={{ mt: 2, flex: 1 }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>{item.itemName}</Typography>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <LocalOfferIcon sx={{ fontSize: 18, mr: 1, color: 'text.secondary' }} />
-                    <Typography variant="body2">Quantity: {item.quantity}</Typography>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', mt: 1 }}>
-                    <EventIcon sx={{ fontSize: 18, mr: 1, color: 'text.secondary' }} />
-                    <Typography variant="body2">
-                      Expires: {new Date(item.expiryDate).toLocaleDateString()}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Box sx={{ 
-                  mt: 2, 
-                  display: 'flex', 
-                  justifyContent: 'space-between',
-                  borderTop: '1px solid rgba(0,0,0,0.1)',
-                  pt: 2
-                }}>
-                  <Button
-                    startIcon={<EditIcon />}
-                    size="small"
-                    onClick={() => { setSelectedItem(item); setIsAddEditModalOpen(true); }}
-                    sx={{ textTransform: 'none' }}
-                  >
-                    Edit
-                  </Button>
-                  <Button
-                    startIcon={<DeleteIcon />}
-                    size="small"
-                    color="error"
-                    onClick={() => handleDelete(item.id)}
-                    sx={{ textTransform: 'none' }}
-                  >
-                    Delete
-                  </Button>
-                </Box>
-              </Paper>
-            </motion.div>
-          </Grid>
-        ))}
-      </Grid>
-
-      {filteredItems.length === 0 && (
-        <Box
-          sx={{
-            textAlign: 'center',
-            py: 8,
-            px: 2
-          }}
-        >
-          <img
-            src="/empty-fridge.svg"
-            alt="Empty Fridge"
-            style={{ width: '200px', marginBottom: '24px' }}
-          />
-          <Typography variant="h6" color="text.secondary">
-            No items found
-          </Typography>
-          <Button
-            variant="contained"
-            onClick={() => setIsAddEditModalOpen(true)}
-            sx={{ mt: 2 }}
-          >
-            Add Your First Item
-          </Button>
-        </Box>
-      )}
-
-      <Dialog 
-        open={isAddEditModalOpen} 
-        onClose={() => setIsAddEditModalOpen(false)}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            p: 2
-          }
-        }}
-      >
-        <DialogTitle sx={{ 
-          pb: 3,
-          borderBottom: '1px solid rgba(0,0,0,0.1)'
+      <Container maxWidth="lg">
+        <Box sx={{ 
+          display: 'flex', 
+          gap: 2, 
+          flexWrap: 'wrap',
+          backgroundColor: 'white',
+          p: 3,
+          borderRadius: 4,
+          mb: 4,
+          boxShadow: theme.shadows[2]
         }}>
-          <Typography variant="h5" component="div" sx={{ fontWeight: 600 }}>
-            {selectedItem ? 'Edit Item' : 'Add New Item'}
-          </Typography>
-          <IconButton
-            onClick={() => setIsAddEditModalOpen(false)}
-            sx={{
-              position: 'absolute',
-              right: 16,
-              top: 16
+          <TextField
+            size="medium"
+            variant="outlined"
+            placeholder="Search items..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ 
+              flex: 2,
+              minWidth: '200px',
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 3
+              }
+            }}
+            InputProps={{
+              startAdornment: <SearchIcon color="action" sx={{ mr: 1 }} />
+            }}
+          />
+          <FormControl 
+            size="medium" 
+            sx={{ 
+              flex: 1,
+              minWidth: '200px'
             }}
           >
-            <CloseIcon />
-          </IconButton>
-        </DialogTitle>
-        <DialogContent>
-          <ItemForm
-            initialData={selectedItem}
-            onSubmit={handleSubmit}
-          />
-        </DialogContent>
-      </Dialog>
+            <InputLabel>Category</InputLabel>
+            <Select
+              value={selectedCategory}
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              label="Category"
+              sx={{ borderRadius: 3 }}
+            >
+              <MenuItem value="all">All Categories</MenuItem>
+              <MenuItem value="Dairy">Dairy</MenuItem>
+              <MenuItem value="Vegetables">Vegetables</MenuItem>
+              <MenuItem value="Fruits">Fruits</MenuItem>
+              <MenuItem value="Meat">Meat</MenuItem>
+              <MenuItem value="Beverages">Beverages</MenuItem>
+              <MenuItem value="Other">Other</MenuItem>
+            </Select>
+          </FormControl>
+        </Box>
 
-      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleSnackbarClose}>
-        <Alert onClose={handleSnackbarClose} severity="success" sx={{ width: '100%' }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
-    </Container>
+        <Grid container spacing={3}>
+          {filteredItems.map(item => (
+            <Grid item xs={12} sm={6} md={4} key={item.id}>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4 }}
+              >
+                <Paper
+                  elevation={2}
+                  sx={{
+                    padding: 0,
+                    borderRadius: 4,
+                    backgroundColor: getExpiryStatus(item.expiryDate) === 'expired' ? alpha(theme.palette.error.light, 0.1) :
+                      getExpiryStatus(item.expiryDate) === 'warning' ? alpha(theme.palette.warning.light, 0.1) : alpha(theme.palette.success.light, 0.1),
+                    transition: 'all 0.3s ease',
+                    '&:hover': {
+                      transform: 'translateY(-8px)',
+                      boxShadow: theme.shadows[8],
+                    },
+                    display: 'flex',
+                    flexDirection: 'column',
+                    height: '100%',
+                    overflow: 'hidden'
+                  }}
+                >
+                  <Box sx={{ position: 'relative' }}>
+                    <img
+                      src={item.imageURL || '/default-food-image.png'}
+                      alt={item.itemName}
+                      style={{ 
+                        width: '100%', 
+                        height: '220px', 
+                        objectFit: 'cover'
+                      }}
+                    />
+                    <Chip
+                      label={item.category}
+                      size="small"
+                      sx={{
+                        position: 'absolute',
+                        top: 16,
+                        right: 16,
+                        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                        backdropFilter: 'blur(4px)',
+                        fontWeight: 600,
+                        boxShadow: theme.shadows[2]
+                      }}
+                    />
+                  </Box>
+                  
+                  <Box sx={{ p: 3, flex: 1 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>{item.itemName}</Typography>
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                      <LocalOfferIcon sx={{ fontSize: 20, mr: 1, color: theme.palette.text.secondary }} />
+                      <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                        Quantity: {item.quantity}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <EventIcon sx={{ fontSize: 20, mr: 1, color: theme.palette.text.secondary }} />
+                      <Typography variant="body1" sx={{ color: theme.palette.text.secondary }}>
+                        Expires: {new Date(item.expiryDate).toLocaleDateString()}
+                      </Typography>
+                    </Box>
+                  </Box>
+
+                  <Box sx={{ 
+                    px: 3,
+                    pb: 3,
+                    display: 'flex', 
+                    justifyContent: 'space-between',
+                    gap: 2
+                  }}>
+                    <Button
+                      variant="outlined"
+                      startIcon={<EditIcon />}
+                      onClick={() => { setSelectedItem(item); setIsAddEditModalOpen(true); }}
+                      sx={{ 
+                        flex: 1,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 600
+                      }}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      variant="contained"
+                      startIcon={<DeleteIcon />}
+                      color="error"
+                      onClick={() => handleDelete(item.id)}
+                      sx={{ 
+                        flex: 1,
+                        borderRadius: 2,
+                        textTransform: 'none',
+                        fontWeight: 600
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </Box>
+                </Paper>
+              </motion.div>
+            </Grid>
+          ))}
+        </Grid>
+
+        {filteredItems.length === 0 && (
+          <Box
+            sx={{
+              textAlign: 'center',
+              py: 12,
+              px: 2,
+              backgroundColor: 'white',
+              borderRadius: 4,
+              boxShadow: theme.shadows[2]
+            }}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+            >
+              <img
+                src="/empty-fridge.svg"
+                alt="Empty Fridge"
+                style={{ width: '240px', marginBottom: '32px' }}
+              />
+              <Typography variant="h5" sx={{ color: theme.palette.text.secondary, mb: 3, fontWeight: 600 }}>
+                No items found in your fridge
+              </Typography>
+              <Button
+                variant="contained"
+                size="large"
+                onClick={() => setIsAddEditModalOpen(true)}
+                startIcon={<AddIcon />}
+                sx={{ 
+                  borderRadius: 3,
+                  textTransform: 'none',
+                  px: 4,
+                  py: 1.5,
+                  fontSize: '1.1rem'
+                }}
+              >
+                Add Your First Item
+              </Button>
+            </motion.div>
+          </Box>
+        )}
+
+        <Dialog 
+          open={isAddEditModalOpen} 
+          onClose={() => setIsAddEditModalOpen(false)}
+          maxWidth="sm"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 4,
+              p: 2
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            pb: 3,
+            borderBottom: '1px solid',
+            borderColor: theme.palette.divider
+          }}>
+            <Typography variant="h5" sx={{ fontWeight: 700 }}>
+              {selectedItem ? 'Edit Item' : 'Add New Item'}
+            </Typography>
+            <IconButton
+              onClick={() => setIsAddEditModalOpen(false)}
+              sx={{
+                position: 'absolute',
+                right: 16,
+                top: 16,
+                color: theme.palette.text.secondary
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
+          <DialogContent>
+            <ItemForm
+              initialData={selectedItem}
+              onSubmit={handleSubmit}
+            />
+          </DialogContent>
+        </Dialog>
+
+        <Snackbar 
+          open={snackbarOpen} 
+          autoHideDuration={4000} 
+          onClose={handleSnackbarClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert 
+            onClose={handleSnackbarClose} 
+            severity="success" 
+            variant="filled"
+            sx={{ width: '100%', borderRadius: 2 }}
+          >
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </Container>
+    </Box>
   );
 };
 
 const ItemForm = ({ initialData, onSubmit }) => {
+  const theme = useTheme();
   const [itemName, setItemName] = useState('');
   const [category, setCategory] = useState('Dairy');
   const [quantity, setQuantity] = useState(1);
@@ -400,8 +481,7 @@ const ItemForm = ({ initialData, onSubmit }) => {
   const [isLoadingImage, setIsLoadingImage] = useState(false);
   const [imageError, setImageError] = useState(null);
 
-  // Add debounced item name
-  const debouncedItemName = useDebounce(itemName, 1000); // 1000ms = 1 second delay
+  const debouncedItemName = useDebounce(itemName, 1000);
 
   useEffect(() => {
     if (initialData) {
@@ -413,7 +493,6 @@ const ItemForm = ({ initialData, onSubmit }) => {
     }
   }, [initialData]);
 
-  // Move image fetching logic to useEffect
   useEffect(() => {
     const fetchImage = async () => {
       if (debouncedItemName && !imageURL && debouncedItemName.length >= 3) {
@@ -431,12 +510,10 @@ const ItemForm = ({ initialData, onSubmit }) => {
     };
 
     fetchImage();
-  }, [debouncedItemName]); // Only run when debouncedItemName changes
+  }, [debouncedItemName]);
 
-  // Simplified handleItemNameChange
   const handleItemNameChange = (e) => {
-    const newItemName = e.target.value;
-    setItemName(newItemName);
+    setItemName(e.target.value);
   };
 
   const handleSubmit = (e) => {
@@ -454,23 +531,23 @@ const ItemForm = ({ initialData, onSubmit }) => {
         margin="normal"
         required
         sx={{
+          mt: 3,
           '& .MuiOutlinedInput-root': {
             borderRadius: 2,
           }
         }}
       />
-
-      <Box sx={{ mt: 2, mb: 2 }}>
-        <Typography variant="subtitle1" sx={{ mb: 1 }}>Item Image</Typography>
+      <Box sx={{ mt: 3, mb: 3 }}>
+        <Typography variant="subtitle1" sx={{ mb: 1, fontWeight: 600 }}>Item Image</Typography>
         
         {isLoadingImage ? (
           <Box sx={{ 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
-            height: '200px',
-            backgroundColor: '#f5f5f5',
-            borderRadius: '8px'
+            height: '240px',
+            backgroundColor: alpha(theme.palette.primary.main, 0.05),
+            borderRadius: 3
           }}>
             <CircularProgress />
           </Box>
@@ -481,9 +558,9 @@ const ItemForm = ({ initialData, onSubmit }) => {
               alt={itemName}
               style={{
                 width: '100%',
-                height: '200px',
+                height: '240px',
                 objectFit: 'cover',
-                borderRadius: '8px'
+                borderRadius: '12px'
               }}
             />
             <IconButton
@@ -492,9 +569,9 @@ const ItemForm = ({ initialData, onSubmit }) => {
                 position: 'absolute',
                 top: 8,
                 right: 8,
-                backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                backgroundColor: 'rgba(255, 255, 255, 0.9)',
                 '&:hover': {
-                  backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                  backgroundColor: 'white',
                 }
               }}
             >
@@ -505,23 +582,24 @@ const ItemForm = ({ initialData, onSubmit }) => {
           <Box
             sx={{
               width: '100%',
-              height: '200px',
-              borderRadius: '8px',
-              border: '2px dashed #ccc',
+              height: '240px',
+              borderRadius: 3,
+              border: '2px dashed',
+              borderColor: alpha(theme.palette.primary.main, 0.2),
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              backgroundColor: '#f5f5f5'
+              backgroundColor: alpha(theme.palette.primary.main, 0.05)
             }}
           >
-            <Typography color="textSecondary">
+            <Typography color="textSecondary" sx={{ fontWeight: 500 }}>
               Enter item name to auto-fetch image
             </Typography>
           </Box>
         )}
 
         {imageError && (
-          <Alert severity="error" sx={{ mt: 1 }}>
+          <Alert severity="error" sx={{ mt: 2, borderRadius: 2 }}>
             {imageError}
           </Alert>
         )}
@@ -533,6 +611,7 @@ const ItemForm = ({ initialData, onSubmit }) => {
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           required
+          sx={{ borderRadius: 2 }}
         >
           <MenuItem value="Dairy">Dairy</MenuItem>
           <MenuItem value="Vegetables">Vegetables</MenuItem>
@@ -552,6 +631,11 @@ const ItemForm = ({ initialData, onSubmit }) => {
         margin="normal"
         required
         InputProps={{ inputProps: { min: 1 } }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 2
+          }
+        }}
       />
 
       <TextField
@@ -563,19 +647,25 @@ const ItemForm = ({ initialData, onSubmit }) => {
         margin="normal"
         required
         InputLabelProps={{ shrink: true }}
+        sx={{
+          '& .MuiOutlinedInput-root': {
+            borderRadius: 2
+          }
+        }}
       />
 
       <Button 
         type="submit" 
         variant="contained" 
-        color="primary" 
         fullWidth
         sx={{ 
-          marginTop: 2,
-          height: '48px',
+          mt: 4,
+          mb: 2,
+          height: '56px',
           borderRadius: 2,
           textTransform: 'none',
-          fontSize: '16px'
+          fontSize: '1.1rem',
+          fontWeight: 600
         }}
       >
         {initialData ? 'Save Changes' : 'Add Item'}
