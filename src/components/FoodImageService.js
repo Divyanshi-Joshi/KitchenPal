@@ -1,3 +1,4 @@
+
 // FoodImageService.js
 const FOOD_IMAGES = {
     // Dairy
@@ -37,7 +38,7 @@ const FOOD_IMAGES = {
   };
   
   export class FoodImageService {
-    static UNSPLASH_ACCESS_KEY = 'API KEY'; // Replace with your key
+    static UNSPLASH_ACCESS_KEY = ''; // Replace with your key
     
     static async getImage(itemName) {
       // First check our predefined mapping
