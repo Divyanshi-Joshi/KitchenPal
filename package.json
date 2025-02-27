@@ -3,32 +3,46 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@date-io/date-fns": "^3.2.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@material-ui/core": "^4.12.4",
     "@mui/icons-material": "^6.4.4",
+    "@mui/lab": "^6.0.0-beta.27",
     "@mui/material": "^6.4.4",
+    "@mui/x-date-pickers": "^7.27.0",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^13.5.0",
     "ajv": "^8.17.1",
     "ajv-keywords": "^5.1.0",
+    "axios": "^1.8.1",
+    "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "firebase": "^11.3.1",
     "framer-motion": "^12.4.3",
     "moment": "^2.30.1",
+    "mongoose": "^8.10.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-firebase-hooks": "^5.1.1",
     "react-router-dom": "^7.1.5",
     "react-scripts": "5.0.1",
+    "recharts": "^2.15.1",
     "web-vitals": "^2.1.4"
   },
+  "proxy": "http://localhost:5000",
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "backend": "node backend/backend.js",
+    "dev-backend": "nodemon backend/backend.js",
+    "dev": "concurrently \"npm run dev-backend\" \"npm start\""
   },
   "eslintConfig": {
     "extends": [
@@ -47,5 +61,9 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "nodemon": "^3.1.9"
   }
 }
