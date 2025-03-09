@@ -37,6 +37,7 @@ const GroceryList = () => {
   // Replace the hardcoded aiSuggestions state with an empty array
 const [aiSuggestions, setAiSuggestions] = useState([]);
 const [suggestionsLoading, setSuggestionsLoading] = useState(false);
+const [isEditMode, setIsEditMode] = useState(false);
 // Add this useEffect after your other useEffects
 // Dependencies  
   // (Optional) Recipes object – fill this with your recipes if needed.
@@ -165,7 +166,7 @@ const [suggestionsLoading, setSuggestionsLoading] = useState(false);
   };
   
   // Toggle check status on an item
-  const handleToggleCheck = (index) => {
+  const handleToggleCheck = async (index) => {
     if (!isAuthenticated) {
       setError('Please log in to manage your grocery list');
       return;
@@ -174,6 +175,26 @@ const [suggestionsLoading, setSuggestionsLoading] = useState(false);
     const updatedItems = [...items];
     updatedItems[index].checked = !updatedItems[index].checked;
     setItems(updatedItems);
+  
+    // Save the updated checked state to backend
+    if (currentListId) {
+      try {
+        await fetch(`${API_BASE_URL}/grocery-lists/${userId}/${currentListId}`, {
+          method: 'PUT',
+          headers: {
+            ...getAuthHeaders(),
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            items: updatedItems,
+            totalCost,
+            checkedItems
+          })
+        });
+      } catch (error) {
+        console.error('Error saving checked state:', error);
+      }
+    }
   };
   
   // Recipe selection (if using recipes)
@@ -349,6 +370,43 @@ const markListAsCompleted = async () => {
     }
     
     setIsEditable(true);
+    setIsEditMode(true);
+  };
+  
+  const handleDoneEditing = async () => {
+    if (!isAuthenticated) {
+      setError('Please log in to save changes');
+      return;
+    }
+  
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/grocery-lists/${userId}/${currentListId}`, {
+        method: 'PUT',
+        headers: {
+          ...getAuthHeaders(),
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          items,
+          totalCost,
+          checkedItems,
+          isEditable: false
+        })
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to save changes');
+      }
+  
+      setIsEditMode(false);
+      setIsEditable(false);
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      setError('Failed to save changes. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const handleFinish = () => {
@@ -714,44 +772,57 @@ const markListAsCompleted = async () => {
         )}
         
         {/* Action Buttons for List Management */}
-        {items.length > 0 && (
-          <>
-            {!isFinalized && (
-              <Button
-                fullWidth
-                variant="contained"
-                color="primary"
-                onClick={handleGenerateList}
-                disabled={isLoading}
-                sx={{ mt: 2 }}
-              >
-                {isLoading ? 'Generating...' : 'Generate List'}
-              </Button>
-            )}
-            {isFinalized && (
-              <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="primary"
-                  onClick={handleEdit}
-                  disabled={isLoading}
-                >
-                  Edit List
-                </Button>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="secondary"
-                  onClick={handleFinish}
-                  disabled={isLoading}
-                >
-                  Finish Shopping
-                </Button>
-              </Box>
-            )}
-          </>
+        {/* Action Buttons for List Management */}
+{items.length > 0 && (
+  <>
+    {!isFinalized && (
+      <Button
+        fullWidth
+        variant="contained"
+        color="primary"
+        onClick={handleGenerateList}
+        disabled={isLoading}
+        sx={{ mt: 2 }}
+      >
+        {isLoading ? 'Generating...' : 'Generate List'}
+      </Button>
+    )}
+    {isFinalized && (
+      <Box sx={{ mt: 2, display: 'flex', gap: 2 }}>
+        {!isEditMode ? (
+          <Button
+            fullWidth
+            variant="contained"
+            color="primary"
+            onClick={handleEdit}
+            disabled={isLoading}
+          >
+            Edit List
+          </Button>
+        ) : (
+          <Button
+            fullWidth
+            variant="contained"
+            color="success"
+            onClick={handleDoneEditing}
+            disabled={isLoading}
+          >
+            Done
+          </Button>
         )}
+        <Button
+          fullWidth
+          variant="contained"
+          color="secondary"
+          onClick={handleFinish}
+          disabled={isLoading || isEditMode}
+        >
+          Finish Shopping
+        </Button>
+      </Box>
+    )}
+  </>
+)}
       </motion.div>
     </Box>
   );
