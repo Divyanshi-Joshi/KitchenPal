@@ -6,7 +6,11 @@ require('dotenv').config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: 'http://localhost:3000', // Your React app's URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
 
 // MongoDB connection
@@ -23,6 +27,9 @@ db.once('open', () => {
 
 // Routes
 app.use('/api/items', require('./routes/items'));
+app.use('/api/grocery-lists', require('./routes/groceryLists')); // Add this line
+// Add this line with your other routes
+app.use('/api/ai', require('./routes/ai'));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
