@@ -88,4 +88,29 @@ router.patch('/:userId/:listId/complete', async (req, res) => {
   }
 });
 
+// Update list items and checked state
+router.put('/:userId/:listId', async (req, res) => {
+    try {
+      const list = await GroceryList.findOne({ 
+        _id: req.params.listId,
+        userId: req.params.userId 
+      });
+      
+      if (!list) {
+        return res.status(404).json({ message: 'List not found' });
+      }
+  
+      // Update the list with new data
+      list.items = req.body.items;
+      list.totalCost = req.body.totalCost;
+      list.checkedItems = req.body.checkedItems;
+      list.isEditable = req.body.isEditable;
+  
+      const updatedList = await list.save();
+      res.json(updatedList);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
 module.exports = router;
