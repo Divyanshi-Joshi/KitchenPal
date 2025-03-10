@@ -1,81 +1,120 @@
-// src/components/MealPlanning.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
+import "./MealPlanning.css";
 
-function MealPlanning() {
-  const [dietaryRestrictions, setDietaryRestrictions] = useState({
-    lactoseIntolerant: false,
-    glutenFree: false,
-    allergies: ''
-  });
-  const [mealPlan, setMealPlan] = useState([]);
+const MealPlanning = () => {
+  const meals = [
+    {
+      day: "Monday",
+      breakfast: ["Oatmeal", "Fruits", "Milk"],
+      lunch: ["Grilled Chicken", "Quinoa", "Spinach"],
+      dinner: ["Tofu", "Vegetables", "Rice"],
+    },
+    {
+      day: "Tuesday",
+      breakfast: ["Avocado Toast", "Eggs"],
+      lunch: ["Pasta", "Pesto", "Parmesan"],
+      dinner: ["Salmon", "Broccoli", "Garlic"],
+    },
+    {
+      day: "Wednesday",
+      breakfast: ["Greek Yogurt", "Honey", "Granola"],
+      lunch: ["Chicken Caesar Salad", "Croutons"],
+      dinner: ["Vegetable Curry", "Rice"],
+    },
+    {
+      day: "Thursday",
+      breakfast: ["Smoothie", "Banana", "Berries"],
+      lunch: ["Turkey Sandwich", "Spinach"],
+      dinner: ["Lentil Soup", "Garlic Bread"],
+    },
+    {
+      day: "Friday",
+      breakfast: ["Pancakes", "Maple Syrup"],
+      lunch: ["Grilled Cheese", "Tomato Soup"],
+      dinner: ["Shrimp Stir-fry", "Noodles"],
+    },
+    {
+      day: "Saturday",
+      breakfast: ["Banana Pancakes"],
+      lunch: ["Tuna Salad", "Crackers"],
+      dinner: ["Homemade Pizza", "Veggies"],
+    },
+    {
+      day: "Sunday",
+      breakfast: ["French Toast", "Berries"],
+      lunch: ["BBQ Chicken", "Mashed Potatoes"],
+      dinner: ["Vegetable Lasagna"],
+    },
+  ];
 
-  const handleDietaryChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setDietaryRestrictions(prevState => ({
-      ...prevState,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+  const getCurrentMeal = () => {
+    const now = new Date();
+    const hours = now.getHours();
+    const currentDay = now.toLocaleString("en-US", { weekday: "long" });
+    
+    const todayMeal = meals.find((meal) => meal.day === currentDay);
+
+    if (hours < 10) return { type: "Breakfast", meal: todayMeal.breakfast };
+    else if (hours < 15) return { type: "Lunch", meal: todayMeal.lunch };
+    else return { type: "Dinner", meal: todayMeal.dinner };
   };
 
-  const generateMealPlan = () => {
-    // This is a placeholder function. In a real application, you would
-    // implement logic to generate a meal plan based on fridge inventory
-    // and dietary restrictions.
-    const newMealPlan = [
-      { day: 'Monday', meals: ['Breakfast: Oatmeal', 'Lunch: Salad', 'Dinner: Grilled Chicken'] },
-      { day: 'Tuesday', meals: ['Breakfast: Smoothie', 'Lunch: Sandwich', 'Dinner: Pasta'] },
-      // ... more days
-    ];
-    setMealPlan(newMealPlan);
-  };
+  const [nextMeal, setNextMeal] = useState(getCurrentMeal());
+  const [search, setSearch] = useState("");
+  const [filteredMeals, setFilteredMeals] = useState(meals);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNextMeal(getCurrentMeal());
+    }, 60000); // Updates every minute
+
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (search.trim() === "") {
+      setFilteredMeals(meals);
+    } else {
+      const filtered = meals.filter((meal) =>
+        Object.values(meal)
+          .flat()
+          .some((ingredient) =>
+            ingredient.toLowerCase().includes(search.toLowerCase())
+          )
+      );
+      setFilteredMeals(filtered);
+    }
+  }, [search]);
 
   return (
-    <div>
-      <h2>Meal Planning</h2>
-      <form>
-        <label>
-          Lactose Intolerant:
-          <input
-            type="checkbox"
-            name="lactoseIntolerant"
-            checked={dietaryRestrictions.lactoseIntolerant}
-            onChange={handleDietaryChange}
-          />
-        </label>
-        <label>
-          Gluten Free:
-          <input
-            type="checkbox"
-            name="glutenFree"
-            checked={dietaryRestrictions.glutenFree}
-            onChange={handleDietaryChange}
-          />
-        </label>
-        <label>
-          Allergies:
-          <input
-            type="text"
-            name="allergies"
-            value={dietaryRestrictions.allergies}
-            onChange={handleDietaryChange}
-            placeholder="e.g., peanuts, shellfish"
-          />
-        </label>
-      </form>
-      <button onClick={generateMealPlan}>Generate Meal Plan</button>
-      <div>
-        <h3>Weekly Meal Plan</h3>
-        {mealPlan.map(day => (
-          <div key={day.day}>
-            <h4>{day.day}</h4>
-            <ul>
-              {day.meals.map(meal => <li key={meal}>{meal}</li>)}
-            </ul>
+    <div className="meal-planning">
+      <h2 className="title">Weekly Meal Plan</h2>
+
+      <div className="next-meal">
+        <h3>Next Meal: {nextMeal.type}</h3>
+        <p>{nextMeal.meal.join(", ")}</p>
+      </div>
+
+      <input
+        type="text"
+        placeholder="Search meals by pantry items..."
+        className="search-box"
+        value={search}
+        onChange={(e) => setSearch(e.target.value)}
+      />
+
+      <div className="meal-container">
+        {filteredMeals.map((meal, index) => (
+          <div className="meal-card" key={index}>
+            <h3 className="day">{meal.day}</h3>
+            <p><strong>Breakfast:</strong> {meal.breakfast.join(", ")}</p>
+            <p><strong>Lunch:</strong> {meal.lunch.join(", ")}</p>
+            <p><strong>Dinner:</strong> {meal.dinner.join(", ")}</p>
           </div>
         ))}
       </div>
     </div>
   );
-}
+};
 
 export default MealPlanning;
