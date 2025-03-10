@@ -1,335 +1,24 @@
 /* Meal Planning Container */
-.meal-planning-container {
+.meal-planning {
     max-width: 900px;
     margin: auto;
     padding: 20px;
     font-family: 'Poppins', sans-serif;
     text-align: center;
-    background: #fef6f6; /* Soft pastel pink */
+    background: #fef6f6;
     border-radius: 12px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Centered Weekly Meal Plan Heading */
-.meal-planning-container h2 {
+/* Title */
+.title {
     text-align: center;
     font-size: 28px;
     color: #ff6b6b;
     font-weight: bold;
     margin-bottom: 15px;
-}
-
-/* Meal Grid */
-.meal-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-top: 20px;
-    padding: 20px;
-}
-
-/* Meal Card */
-.meal-card {
-    background: #fff;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    transition: transform 0.2s ease-in-out;
-    text-align: center;
-    position: relative;
-    overflow: hidden;
-}
-
-/* Hover Effect */
-.meal-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-}
-
-/* Different background colors for meal types */
-.breakfast {
-    background: #ffebcd; /* Soft peach */
-}
-
-.lunch {
-    background: #d8f3dc; /* Soft mint green */
-}
-
-.dinner {
-    background: #ffdde1; /* Soft pink */
-}
-
-.snack {
-    background: #fef2c7; /* Soft yellow */
-}
-
-/* Meal Card Title */
-.meal-card h3 {
-    color: #ff6b6b;
-    font-size: 22px;
-    margin-bottom: 10px;
-}
-
-/* Meal Description */
-.meal-card p {
-    color: #555;
-    font-size: 14px;
-}
-
-/* Meal Time Badge */
-.meal-time {
-    background: rgba(255, 107, 107, 0.2);
-    color: #e63946;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: bold;
-    display: inline-block;
-    margin-bottom: 10px;
-}
-
-/* Meal Image */
-.meal-card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 10px;
-}
-
-/* Add Meal Button */
-.add-meal-btn {
-    background: #ff6b6b;
-    color: white;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.3s, transform 0.2s;
-}
-
-.add-meal-btn:hover {
-    background: #e63946;
-    transform: scale(1.05);
-}
-
-.meal-card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 10px;
-}
-
-.preferences {
-    display: flex;
-    justify-content: center;
-    gap: 20px;
-    margin-bottom: 20px;
-  }
-  
-  .preferences label {
-    display: flex;
-    align-items: center;
-    font-size: 16px;
-    color: #444;
-    gap: 8px;
-    cursor: pointer;
-  }
-  
-  .preferences input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-  }
-  
-  .meal-card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 10px;
-    margin-bottom: 10px;
-  }
-  
-  .no-meals {
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    color: #e63946;
-  }
-
-  /* Style for the preference checkboxes */
-.preferences {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
-    margin-bottom: 20px;
-    padding: 10px;
-    background: #ffebf0; /* Light pink background */
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  }
-  
-  .preferences label {
-    display: flex;
-    align-items: center;
-    font-size: 16px;
-    font-weight: 500;
-    color: #ff6b6b; /* Soft red */
-    gap: 8px;
-    cursor: pointer;
-    padding: 6px 12px;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-  }
-  
-  .preferences label:hover {
-    background: rgba(255, 107, 107, 0.2);
-    border-radius: 8px;
-  }
-  
-  .preferences input[type="checkbox"] {
-    width: 18px;
-    height: 18px;
-    accent-color: #ff6b6b; /* Custom checkbox color */
-    cursor: pointer;
-  }
-  
-  /* Style for the 'Add Meal' button */
-  .add-meal-btn {
-    background: linear-gradient(135deg, #ff6b6b, #e63946); /* Soft red gradient */
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    padding: 12px 18px;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease-in-out;
-    display: block;
-    margin: 20px auto;
-  }
-  
-  .add-meal-btn:hover {
-    background: linear-gradient(135deg, #e63946, #c92a2a);
-    transform: scale(1.05);
-    box-shadow: 0 4px 12px rgba(230, 57, 70, 0.4);
-  }
-  
-  .add-meal-btn:active {
-    transform: scale(0.98);
-  }
-
-  /* Meal Card Styling */
-  .meal-card {
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    padding: 20px;
-    text-align: center;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-    position: relative;
-    overflow: hidden;
-  }
-  
-  /* Add a soft gradient overlay */
-  .meal-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(135deg, rgba(255, 239, 213, 0.3), rgba(255, 214, 214, 0.3));
-    z-index: -1;
-    transition: opacity 0.3s ease-in-out;
-  }
-  
-  /* Hover effect */
-  .meal-card:hover {
-    transform: translateY(-8px);
-    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
-  }
-  
-  /* Floating glow effect */
-  .meal-card:hover::before {
-    opacity: 0.7;
-  }
-  
-  /* Meal Type Colors */
-  .breakfast {
-    background: #ffebcd; /* Soft peach */
-  }
-  
-  .lunch {
-    background: #d8f3dc; /* Soft mint green */
-  }
-  
-  .dinner {
-    background: #ffdde1; /* Soft pink */
-  }
-  
-  .snack {
-    background: #fef2c7; /* Soft yellow */
-  }
-  
-  /* Day Title */
-  .meal-card h3 {
-    font-size: 24px;
-    font-weight: bold;
-    color: #ff6b6b;
-    margin-bottom: 10px;
-    animation: fadeIn 0.8s ease-in-out;
-  }
-  
-  /* Meal Text */
-  .meal-card p {
-    font-size: 16px;
-    color: #555;
-    line-height: 1.5;
-    animation: fadeIn 1s ease-in-out;
-  }
-  
-  /* Fade-in animation */
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Bouncy hover effect */
-  @keyframes bounce {
-    0%, 100% {
-      transform: translateY(0);
-    }
-    50% {
-      transform: translateY(-5px);
-    }
-  }
-  
-  /* Apply bounce on hover */
-  .meal-card:hover {
-    transform: scale(1.05); /* Enlarges slightly instead of disappearing */
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
-  /* Next meal section */
-.next-meal {
-    background: #ffdde1;
-    padding: 15px;
-    margin: 20px auto;
-    max-width: 500px;
-    border-radius: 10px;
-    text-align: center;
-    font-size: 18px;
-    font-weight: bold;
-    color: #e63946;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 /* Search Box */
@@ -342,4 +31,98 @@
     border: 1px solid #ccc;
     margin: 10px auto;
     display: block;
+}
+
+/* Filters Section */
+.filters {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin: 15px 0;
+    flex-wrap: wrap;
+}
+
+/* Checkbox Container */
+.filters label {
+    display: flex;
+    align-items: center;
+    background: #ffdde1;
+    padding: 10px 15px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    color: #e63946;
+    transition: background 0.3s ease-in-out;
+}
+
+.filters label:hover {
+    background: #ffb3b3;
+}
+
+/* Properly align checkbox and text */
+.filters input {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #e63946;
+    border-radius: 4px;
+    margin-right: 8px;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Custom Checkbox - Checked State */
+.filters input:checked {
+    background-color: #e63946;
+    border-color: #e63946;
+}
+
+.filters input:checked::after {
+    content: "✔";
+    font-size: 12px;
+    color: white;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* Meal Grid */
+.meal-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-top: 20px;
+    padding: 20px;
+}
+
+/* Meal Card */
+.meal-card {
+    background: #fff;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+.meal-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Day Title */
+.meal-card h3 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ff6b6b;
+    margin-bottom: 10px;
+}
+
+/* Meal Text */
+.meal-card p {
+    font-size: 16px;
+    color: #555;
+    line-height: 1.5;
 }
