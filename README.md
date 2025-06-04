@@ -11,6 +11,8 @@ An AI-powered kitchen management system built with React that helps you manage y
 - Category-based organization (Dairy, Vegetables, Fruits, Meat, etc.)
 - Real-time search and filtering capabilities
 
+![Smart Fridge Manager](src/assets/k3.png)
+
 ### 2. AI-Powered Grocery List
 - Smart grocery list generation
 - AI-suggested items based on your inventory
