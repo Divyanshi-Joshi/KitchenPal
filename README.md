@@ -2,6 +2,9 @@
 
 An AI-powered kitchen management system built with React that helps you manage your kitchen inventory, plan meals, track food waste and create smart grocery lists.
 
+![](src/assets/k1.png)
+![](src/assets/k2.png)
+
 ## 🌟 Key Features
 
 ### 1. Smart Fridge Management
@@ -21,20 +24,21 @@ An AI-powered kitchen management system built with React that helps you manage y
 - Real-time cost tracking
 - Check/uncheck items functionality
 
+![Grocery List](src/assets/k6.png)
+
 ### 3. Meal Planning
 - Weekly meal planning interface
 - Dietary preference filters (Vegetarian, Vegan, Gluten-Free, etc.)
 - Search functionality for ingredients
-- Beautiful meal cards with breakfast, lunch, and dinner options
-- Tag-based meal organization
+
+![Meal Planning](src/assets/k4.png)
 
 ### 4. Food Waste Tracking
-- Visual waste distribution charts
-- Weekly waste tracking
+- Visual waste distribution charts for expired items monitoring
 - Category-based waste analysis
-- Expired items monitoring
-- Waste reduction insights
 - Interactive pie charts for waste distribution
+
+![Waste Tracker](src/assets/k5.png)
 
 ## 🚀 Getting Started
 
